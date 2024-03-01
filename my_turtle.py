@@ -21,7 +21,6 @@ class MyTurtle(Turtle):
             return stretch
 
     def left_x(self):
-
         strech_x = self.get_correct_strech()[1]
         return self.xcor() - 20 * strech_x / 2
 

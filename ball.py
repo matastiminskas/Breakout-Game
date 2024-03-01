@@ -18,7 +18,7 @@ class Ball(MyTurtle):
 
     def change_direction(self, collision_direction: str):
         """
-        :param collision_direction: which side of the ball was colliding wall? left, right, up, bottom
+        :param collision_direction: which side of the ball was colliding with the wall? left, right, up, bottom
         """
         new_heading = 0
         heading = self.heading()
@@ -39,7 +39,7 @@ class Ball(MyTurtle):
                     new_heading = 0 + abs(180 - heading)
                 elif 180 < heading < 270:
                     new_heading = 360 - abs(180 - heading)
-            case 'bottom':
+            case 'down':
                 if 270 >= heading > 180:
                     new_heading = 90 + abs(270 - heading)
                 elif 270 < heading < 360:
@@ -49,6 +49,7 @@ class Ball(MyTurtle):
     def move(self, screen_max_x, screen_max_y, pad: Pad, block_matrix: BlockMatrix):
         self.fd(1)
 
+        # check collision with screen borders
         if self.right_x() >= screen_max_x:
             self.change_direction("right")
         if self.top_y() >= screen_max_y:
@@ -56,8 +57,9 @@ class Ball(MyTurtle):
         if self.left_x() <= -screen_max_x:
             self.change_direction("left")
         if self.bottom_y() <= -screen_max_y:
-            self.change_direction("bottom")
+            self.change_direction("down")
 
+        # check collision with pad
         if (180 < self.heading() < 360 and self.bottom_y() < pad.top_y() and self.right_x() > pad.left_x()
                 and self.left_x() < pad.right_x() and self.ycor() > pad.ycor()):
             # if you change ball stretch, function becomes incorrect
@@ -65,14 +67,39 @@ class Ball(MyTurtle):
                                       90 + MAX_BOUNCE_DIRECTION_TILT, 90 - MAX_BOUNCE_DIRECTION_TILT)
             self.setheading(new_direction)
 
+        # check collision with blocks
+        block_matrix.sort_by_distance(self.xcor(), self.ycor())
         for block in block_matrix.blocks:
             if block.isvisible():
+
+                # check collision with left side of the block
                 if ((270 < self.heading() <= 360 or 0 <= self.heading() < 90)
                         and self.right_x() >= block.left_x() and self.bottom_y() < block.top_y()
-                        and self.top_y() > block.bottom_y() and self.ycor() < block.left_x()
-                        and (abs(self.right_x() - block.left_x()) < abs(self.top_y() - block.bottom_y())
-                             or abs(self.right_x() - block.left_x()) < abs(self.bottom_y() - block.top_y()))):
+                        and self.top_y() > block.bottom_y() and self.xcor() < block.left_x()
+                        and abs(self.right_x() - block.left_x()) < abs(self.top_y() - block.bottom_y())
+                        and abs(self.right_x() - block.left_x()) < abs(self.bottom_y() - block.top_y())):
                     block.hideturtle()
                     self.change_direction('right')
-                elif (90 < self.heading() < 270 and self.top_y()):
-                    pass
+
+                # check collision with right side of the block
+                elif (90 < self.heading() < 270
+                      and self.bottom_y() < block.top_y() and self.top_y() > block.bottom_y()
+                      and self.left_x() <= block.right_x() and self.xcor() > block.right_x()
+                      and abs(self.left_x() - block.right_x()) < abs(self.top_y() - block.bottom_y())
+                      and abs(self.left_x() - block.right_x()) < abs(self.bottom_y() - block.top_y())):
+                    block.hideturtle()
+                    self.change_direction('left')
+
+                # check collision with top side of the block
+                elif (180 < self.heading() < 360
+                      and self.right_x() > block.left_x() and self.left_x() < block.right_x()
+                      and self.bottom_y() <= block.top_y() and self.ycor() > block.top_y()):
+                    block.hideturtle()
+                    self.change_direction('down')
+
+                # check collision with bottom side of the turtle
+                elif (0 < self.heading() < 180
+                      and self.right_x() > block.left_x() and self.left_x() < block.right_x()
+                      and self.top_y() >= block.bottom_y() and self.ycor() < block.bottom_y()):
+                    block.hideturtle()
+                    self.change_direction('up')

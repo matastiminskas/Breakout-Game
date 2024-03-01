@@ -1,5 +1,6 @@
 from my_turtle import MyTurtle
 import numpy as np
+import math
 
 STRETCH_X = 2
 STRETCH_Y = 1
@@ -25,3 +26,5 @@ class BlockMatrix:
                 block.goto(x, y)
                 self.blocks.append(block)
 
+    def sort_by_distance(self, x, y):
+        self.blocks.sort(key=lambda item: math.dist([x, y], [item.xcor(), item.ycor()]))
