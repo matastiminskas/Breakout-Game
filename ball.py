@@ -16,8 +16,14 @@ class Ball(MyTurtle):
         self.shape("circle")
         self.setheading(90)
 
+    def move_to_pad(self, pad: Pad):
+        x = pad.xcor()
+        y = pad.ycor() + pad.get_correct_strech()[0] * 10 + self.get_correct_strech()[0] * 10
+        self.setposition(x, y)
+
     def change_direction(self, collision_direction: str):
         """
+        change direction of the ball depending on which side of it collided
         :param collision_direction: which side of the ball was colliding with the wall? left, right, up, bottom
         """
         new_heading = 0
@@ -47,6 +53,14 @@ class Ball(MyTurtle):
         self.setheading(new_heading)
 
     def move(self, screen_max_x, screen_max_y, pad: Pad, block_matrix: BlockMatrix):
+        """
+        moves a ball one pixel forward, detects collisions, and changes direction if needed
+        :param screen_max_x:
+        :param screen_max_y:
+        :param pad:
+        :param block_matrix:
+        :return: True - move completed successfully, False - ball collided with bottom ball
+        """
         self.fd(1)
 
         # check collision with screen borders
@@ -56,8 +70,9 @@ class Ball(MyTurtle):
             self.change_direction("up")
         if self.left_x() <= -screen_max_x:
             self.change_direction("left")
+        # game over if touches bottom of the screen
         if self.bottom_y() <= -screen_max_y:
-            self.change_direction("down")
+            return False
 
         # check collision with pad
         if (180 < self.heading() < 360 and self.bottom_y() < pad.top_y() and self.right_x() > pad.left_x()
@@ -97,9 +112,12 @@ class Ball(MyTurtle):
                     block.hideturtle()
                     self.change_direction('down')
 
-                # check collision with bottom side of the turtle
+                # check collision with bottom side of the block
                 elif (0 < self.heading() < 180
                       and self.right_x() > block.left_x() and self.left_x() < block.right_x()
                       and self.top_y() >= block.bottom_y() and self.ycor() < block.bottom_y()):
                     block.hideturtle()
                     self.change_direction('up')
+
+        return True
+

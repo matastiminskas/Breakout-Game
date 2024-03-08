@@ -28,3 +28,10 @@ class BlockMatrix:
 
     def sort_by_distance(self, x, y):
         self.blocks.sort(key=lambda item: math.dist([x, y], [item.xcor(), item.ycor()]))
+
+    def all_blocks_hidden(self):
+        for block in self.blocks:
+            if block.isvisible():
+                return False
+        return True
+
